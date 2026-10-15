@@ -1,0 +1,57 @@
+# Python & Virtual Environments
+venv/
+**/venv/
+.venv/
+**/.venv/
+env/
+**/env/
+ENV/
+**/ENV/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment variables & secrets
+.env
+*.env
+.env.*
+!.env.example
+*.local
+
+# Sensitive credentials & keys
+*.pem
+*.key
+*.cert
+*.crt
+secrets.json
+credentials.json
+
+# IDEs & OS generated files
+.vscode/
+**/.vscode/
+.idea/
+**/.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.bak
+*.tmp
+*.log

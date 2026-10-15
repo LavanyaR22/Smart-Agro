@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AGRI Smart Irrigation Dashboard</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="brand-icon">🌱</div>
+        <div>
+          <h1>AGRI Smart Irrigation</h1>
+          <p class="subtitle">Precision Agriculture & Automated Water Management</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <div class="badge status-badge" id="sensor-status-badge">
+          <span class="status-dot offline" id="sensor-dot"></span>
+          <span id="sensor-status-text">Sensor: Awaiting Data</span>
+        </div>
+        <!-- Accessible Interactive Telemetry Mode Selector -->
+        <div class="mode-selector-group" role="radiogroup" aria-label="Telemetry Mode Selector">
+          <button
+            type="button"
+            class="mode-btn active"
+            id="btn-mode-hardware"
+            role="radio"
+            aria-checked="true"
+            data-mode="hardware"
+            title="Switch to Real Hardware Node (ESP32)"
+          >
+            <span class="mode-icon">🔌</span>
+            <span class="mode-text">Hardware Mode</span>
+          </button>
+          <button
+            type="button"
+            class="mode-btn"
+            id="btn-mode-simulation"
+            role="radio"
+            aria-checked="false"
+            data-mode="simulation"
+            title="Switch to Virtual Sensor Simulator"
+          >
+            <span class="mode-icon">💻</span>
+            <span class="mode-text">Simulation Mode</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Top Alert Bar for System Feedback -->
+    <div id="notification-banner" class="notification-banner hidden">
+      <span id="notification-msg">System message</span>
+      <button id="notification-close" class="close-btn" onclick="dismissBanner()">&times;</button>
+    </div>
+
+    <!-- Main Grid Content -->
+    <main class="dashboard-grid">
+
+      <!-- Metric Card 1: Soil Moisture -->
+      <section class="card metric-card" id="card-soil">
+        <div class="card-header">
+          <div class="header-title-group">
+            <span class="metric-label">Soil Moisture</span>
+            <span class="source-pill simulation" id="src-moisture">SIMULATION</span>
+          </div>
+          <span class="metric-icon">💧</span>
+        </div>
+        <div class="metric-value-container">
+          <span class="metric-value" id="val-moisture">--</span>
+          <span class="metric-unit">%</span>
+        </div>
+        <div class="moisture-bar-track">
+          <div class="moisture-bar-fill" id="moisture-fill" style="width: 0%;"></div>
+        </div>
+        <p class="metric-footer" id="moisture-meta">Optimal band: Select crop</p>
+      </section>
+
+      <!-- Metric Card 2: Temperature -->
+      <section class="card metric-card" id="card-temp">
+        <div class="card-header">
+          <div class="header-title-group">
+            <span class="metric-label">Ambient Temperature</span>
+            <span class="source-pill simulation" id="src-temp">SIMULATION</span>
+          </div>
+          <span class="metric-icon">🌡️</span>
+        </div>
+        <div class="metric-value-container">
+          <span class="metric-value" id="val-temp">--</span>
+          <span class="metric-unit">°C</span>
+        </div>
+        <p class="metric-footer" id="temp-meta">Monitored by DHT22 sensor</p>
+      </section>
+
+      <!-- Metric Card 3: Air Humidity -->
+      <section class="card metric-card" id="card-humidity">
+        <div class="card-header">
+          <div class="header-title-group">
+            <span class="metric-label">Relative Humidity</span>
+            <span class="source-pill simulation" id="src-humidity">SIMULATION</span>
+          </div>
+          <span class="metric-icon">🌫️</span>
+        </div>
+        <div class="metric-value-container">
+          <span class="metric-value" id="val-humidity">--</span>
+          <span class="metric-unit">%</span>
+        </div>
+        <p class="metric-footer" id="humidity-meta">Atmospheric moisture</p>
+      </section>
+
+      <!-- Metric Card 4: Soil Chemistry (NPK & pH) -->
+      <section class="card chemistry-card" id="card-chemistry">
+        <div class="card-header">
+          <div class="header-title-group">
+            <span class="card-title">Soil Nutrients & pH</span>
+            <span class="source-pill simulation" id="src-chemistry">SIMULATION</span>
+          </div>
+          <span class="metric-icon">🧪</span>
+        </div>
+        <p class="card-desc">Soil chemistry & fertility indicators. Unconfirmed physical sensors displayed as N/A.</p>
+        <div class="chemistry-grid">
+          <div class="chem-item">
+            <span class="chem-label">Nitrogen (N)</span>
+            <div class="chem-val-wrap">
+              <span class="chem-value" id="val-nitrogen">--</span>
+              <span class="chem-unit">mg/kg</span>
+            </div>
+            <span class="chem-source-tag simulation" id="src-val-nitrogen">SIMULATION</span>
+          </div>
+          <div class="chem-item">
+            <span class="chem-label">Phosphorus (P)</span>
+            <div class="chem-val-wrap">
+              <span class="chem-value" id="val-phosphorus">--</span>
+              <span class="chem-unit">mg/kg</span>
+            </div>
+            <span class="chem-source-tag simulation" id="src-val-phosphorus">SIMULATION</span>
+          </div>
+          <div class="chem-item">
+            <span class="chem-label">Potassium (K)</span>
+            <div class="chem-val-wrap">
+              <span class="chem-value" id="val-potassium">--</span>
+              <span class="chem-unit">mg/kg</span>
+            </div>
+            <span class="chem-source-tag simulation" id="src-val-potassium">SIMULATION</span>
+          </div>
+          <div class="chem-item">
+            <span class="chem-label">Soil pH</span>
+            <div class="chem-val-wrap">
+              <span class="chem-value" id="val-ph">--</span>
+              <span class="chem-unit">pH</span>
+            </div>
+            <span class="chem-source-tag simulation" id="src-val-ph">SIMULATION</span>
+          </div>
+        </div>
+        <p class="metric-footer" id="chem-meta">Explicit source provenance: displays N/A when sensors are unconfirmed.</p>
+      </section>
+
+      <!-- Card 4: Pump Controller -->
+      <section class="card control-card" id="card-pump">
+        <div class="card-header">
+          <span class="card-title">Irrigation Pump Controller</span>
+          <span class="badge" id="pump-state-badge">PUMP OFF</span>
+        </div>
+        <p class="card-desc">Manual pump trigger. Physical relay remains safely isolated.</p>
+        <div class="pump-controls">
+          <button id="btn-pump-on" class="btn btn-primary" onclick="togglePump('ON')">
+            ▶ Turn Pump ON
+          </button>
+          <button id="btn-pump-off" class="btn btn-secondary" onclick="togglePump('OFF')">
+            ⏹ Turn Pump OFF
+          </button>
+        </div>
+        <div class="pump-info-box" id="pump-info-box">
+          <span class="info-icon">ℹ️</span>
+          <span id="pump-status-detail">Relay is isolated. Software simulation active.</span>
+        </div>
+      </section>
+
+      <!-- Card 5: Crop Selection & Irrigation Recommendation -->
+      <section class="card recommendation-card" id="card-crop">
+        <div class="card-header">
+          <span class="card-title">Crop Intelligence & Recommendation</span>
+          <span class="metric-icon">🌾</span>
+        </div>
+        <div class="form-group">
+          <label for="crop-select">Selected Field Crop:</label>
+          <select id="crop-select" onchange="onCropChange()">
+            <option value="wheat">Wheat (Moderate Water)</option>
+            <option value="tomato">Tomato (High Precision)</option>
+            <option value="rice">Rice / Paddy (High Demand)</option>
+            <option value="maize">Maize / Corn (Moderate)</option>
+            <option value="cotton">Cotton (Drought Resilient)</option>
+          </select>
+        </div>
+        <div class="recommendation-result" id="recommendation-result">
+          <div class="rec-header">
+            <span class="rec-tag" id="rec-status-tag">Evaluating...</span>
+            <span class="source-pill hardware" id="rec-source-pill">HARDWARE</span>
+          </div>
+          <p class="rec-reason" id="rec-reason-text">Select a crop and stream telemetry to view recommendations.</p>
+          <div class="rec-meta">
+            <span>Target Moisture: <strong id="rec-target-moisture">45% - 65%</strong></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Card 6: Weather Outlook (Modular, Optional) -->
+      <section class="card weather-card" id="card-weather">
+        <div class="card-header">
+          <div class="header-title-group">
+            <span class="card-title">Local Weather Module</span>
+            <span class="source-pill simulated" id="src-weather">SIMULATION</span>
+          </div>
+          <span class="metric-icon">🌤️</span>
+        </div>
+        <div class="weather-content">
+          <div class="weather-temp-group">
+            <span class="weather-temp" id="weather-temp">--</span>
+            <span class="weather-unit">°C</span>
+          </div>
+          <div class="weather-details">
+            <p class="weather-condition" id="weather-condition">Checking weather...</p>
+            <p class="weather-location" id="weather-location">Location: New Delhi</p>
+            <span class="source-tag" id="weather-source">Built-in Fallback</span>
+          </div>
+        </div>
+        <p class="card-footnote">Independent module: continues functioning even without external API key.</p>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>AGRI Smart Irrigation Major Project &bull; Windows 11 Localhost &bull; ESP32 & Simulator Ready</p>
+      <div class="footer-links">
+        <a href="/docs" target="_blank">API Swagger Docs</a>
+        <span>&bull;</span>
+        <span id="last-sync-time">Last Sync: Never</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
